@@ -35,9 +35,6 @@ public class TarjetaCredito {
         this.saldoDisponible = saldoDisponible;
         this.cliente = cliente;
     }
-    
-    
-    
 
     public TarjetaCredito() {
     }

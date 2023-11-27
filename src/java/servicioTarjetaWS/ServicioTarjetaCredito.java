@@ -17,6 +17,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.NoSuchElementException;
 import modeloInicioSesion.Cliente;
 import modeloInicioSesion.GenerarUsuarioId;
 
@@ -30,9 +31,13 @@ public class ServicioTarjetaCredito {
     /**
      * This is a sample web service operation
      */
-    private ArrayList<TarjetaCredito> tarjetasCredito = new ArrayList<>();
+    private final ArrayList<TarjetaCredito> tarjetasCredito;
     TarjetaCredito tar;
     private List<Transaccion> historialTransacciones;
+
+    public ServicioTarjetaCredito() {
+        this.tarjetasCredito = new ArrayList<>();
+    }
 
     //METODO PARA EL REGISTRO DE LA TARJETA
     @WebMethod(operationName = "RegistroTarjeta")
@@ -65,35 +70,56 @@ public class ServicioTarjetaCredito {
             throw new RuntimeException("Error durante el registro de tarjeta: " + e.getMessage(), e);
         }
     }
-    
-    
-    
-    
-    
 
     //METODO PARA ACTUALIZAR LA TARJETA DE CREDITO
     @WebMethod(operationName = "ActualizarTarjeta")
-    public boolean ActualizarTarjeta(@WebParam(name = "numero") String numero,
+    public String ActualizarTarjeta(@WebParam(name = "numero") String numero,
             @WebParam(name = "titular") String titular,
             @WebParam(name = "fechaVencimiento") String fechaVencimiento,
             @WebParam(name = "codigoSeguridad") String codigoSeguridad,
             @WebParam(name = "saldoDisponible") float saldoDisponible) {
-        for (TarjetaCredito tarjeta : tarjetasCredito) {
-            if (numero.equals(tarjeta.getNumero())) {
-                tarjeta.setTitular(titular);
-                tarjeta.setFechaVencimiento(fechaVencimiento);
-                tarjeta.setCodigoSeguridad(codigoSeguridad);
-                tarjeta.setSaldoDisponible(saldoDisponible);
-                System.out.println("Tarjeta actualizada");
-                return true; // Actualización exitosa
+
+        try {
+            // Comprobar nulidad de los parámetros
+            if (numero == null || titular == null || fechaVencimiento == null || codigoSeguridad == null) {
+                throw new IllegalArgumentException("Todos los parámetros deben tener valores no nulos");
             }
+
+            boolean tarjetaEncontrada = false;
+
+            for (TarjetaCredito tarjeta : tarjetasCredito) {
+                if (numero.equals(tarjeta.getNumero())) {
+                    // Validar datos de entrada antes de actualizar
+                    validarDatosDeEntrada(titular, fechaVencimiento, codigoSeguridad, saldoDisponible);
+
+                    tarjeta.setTitular(titular);
+                    tarjeta.setFechaVencimiento(fechaVencimiento);
+                    tarjeta.setCodigoSeguridad(codigoSeguridad);
+                    tarjeta.setSaldoDisponible(saldoDisponible);
+                    System.out.println("Tarjeta actualizada");
+                    tarjetaEncontrada = true;
+                    break;
+                }
+            }
+
+            if (!tarjetaEncontrada) {
+                throw new NoSuchElementException("La tarjeta con número " + numero + " no se encontró para actualizar");
+            }
+
+            return "TARJETA ACTUALIZADA EXITOSAMENTE"; // Actualización exitosa
+        } catch (IllegalArgumentException | NoSuchElementException e) {
+            // Manejar excepciones específicas
+            System.out.println("Error al actualizar la tarjeta: " + e.getMessage());
+            return "ERROR AL ACTUALIZAR TARJETA"; // Actualización fallida
         }
-        System.out.println("Tarjeta no encontrada");
-        return false; // Tarjeta no encontrada
     }
 
-    
-    
+    private void validarDatosDeEntrada(String titular, String fechaVencimiento, String codigoSeguridad, float saldoDisponible) {
+        if (titular.isEmpty() || fechaVencimiento.isEmpty() || codigoSeguridad.isEmpty()) {
+            throw new IllegalArgumentException("Los datos de entrada no son válidos");
+        }
+    }
+
     //TARJETA DE CREDITO
     public boolean validarFechaVencimiento(String numeroTarjeta, String fechaVencimiento) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
