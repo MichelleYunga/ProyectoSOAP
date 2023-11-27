@@ -281,6 +281,27 @@ public class ServicioTarjetaCredito {
             throw new IllegalArgumentException("Parámetros de retiro no válidos");
         }
     }
+    
+    
+    //LISTADO DE TARJETAS
+    
+    @WebMethod(operationName = "ListarTarjetas")
+    public String ListarTarjtas() {
+        if (tarjetasCredito.isEmpty()) {
+            return "No hay tarjetas registradas.";
+        }
+        StringBuilder listatar = new StringBuilder("Listado de Tarjetas:\n");
+        for (TarjetaCredito tar : tarjetasCredito) {
+            listatar.append("numero tarjeta: ").append(tar.getNumero())
+                    .append(", Titular: ").append(tar.getTitular())
+                     .append(", Fecha vencimiento: ").append(tar.getFechaVencimiento())
+                     .append(", Codifo seguridad: ").append(tar.getCodigoSeguridad())
+                     .append(", saldo: ").append(tar.getSaldoDisponible())
+                    .append(", Nombre cliente: ").append(tar.getCliente().getNombre());                           
+            listatar.append("\n");
+        }
+        return listatar.toString();
+    }
 
     //VALIDACIONES
     //VALIDAR TARJETA
