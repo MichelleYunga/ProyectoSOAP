@@ -23,38 +23,55 @@ public class InicioSesion {
     /**
      * This is a sample web service operation
      */
-    private GenerarUsuarioId generar;
+    private GenerarUsuarioId generar = new GenerarUsuarioId();
 
     @WebMethod(operationName = "login")
-    public Cliente login(@WebParam(name = "username") String usuario, @WebParam(name = "password") String contraseña) {
-        Cliente cliente = generar.buscarCliente(usuario, contraseña);
-        if (cliente != null) {
-            System.out.println("Credenciales correctas");
-            return cliente;
+    public String login(@WebParam(name = "username") String username, @WebParam(name = "password") String password) {
+
+        try {
+            Cliente cliente = generar.buscarCliente(username, password);
+            if (cliente != null) {
+                System.out.println("Credenciales correctas");
+                return "Credenciales correctas";
+            }
+            System.out.println("Sus credenciales sin incorrectas");
+            return "sus credenciales son incorrectas";
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error durante el inicio sesion", e);
         }
-        System.out.println("Sus credenciales sin incorrectas");
-        return null;
     }
 
-    @WebMethod(operationName = "Regístrese")
-    public boolean registrese(@WebParam(name = "nombre") String nombre, @WebParam(name = "apellido") String apellido, @WebParam(name = "cedula") String cedula,
-            @WebParam(name = "usuario") String usuario, @WebParam(name = "contraseña") String contra, @WebParam(name = "contraseña1") String contra1) {
-        if (generar.existeUsuario(usuario)) {
-            System.out.println("No se puede registrar, usuario ya existente");
-            return false;
-        }
-        if (!compararContraseñas(contra,contra1)) {
-            System.out.println("Las contraseñas no coinciden");
-            return false;
-        }
-
-        Cliente nuevoCliente = generar.generarClienteConID(nombre, apellido, cedula, usuario, contra, contra1);
-        System.out.println("Usuario creado exitosamente. : " + nuevoCliente.getUsuario());
-        return true;
-    }
-
+    
+    
     //METRODO PARA VALIDAR LAS CONTRASEÑAS
     private boolean compararContraseñas(String contraseña1, String contraseña2) {
         return contraseña1.equals(contraseña2);
+    }
+
+    /**
+     * Web service operation
+     */
+    @WebMethod(operationName = "Registro")
+    public String Registro(@WebParam(name = "nombre") String nombre, @WebParam(name = "apellido") String apellido, @WebParam(name = "cedula") String cedula, @WebParam(name = "usuaio") String usuaio, @WebParam(name = "contrasena") String contrasena, @WebParam(name = "contrasena1") String contrasena1) {
+
+        try {
+            if (generar.existeUsuario(usuaio)) {
+                System.out.println("No se puede registrar, usuario ya existente");
+                return "No se puede registrar, usuario ya existente";
+            }
+            if (!compararContraseñas(contrasena, contrasena1)) {
+                System.out.println("Las contraseñas no coinciden");
+                return "las contraseñas no coinciden";
+            }
+
+            Cliente nuevoCliente = generar.generarClienteConID(nombre, apellido, cedula, usuaio, contrasena, contrasena1);
+            System.out.println("Usuario creado exitosamente. : " + nuevoCliente.getUsuario());
+            return "Usuario creado exitosamente";
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error durante el registro de usuario", e);
+
+        }
     }
 }
