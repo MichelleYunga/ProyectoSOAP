@@ -41,8 +41,9 @@ public class ServicioTarjetaCredito {
     }
 
     //METODO PARA EL REGISTRO DE LA TARJETA
+    
     @WebMethod(operationName = "RegistroTarjeta")
-    public String RegistroTarjeta(@WebParam(name = "numero") String numero,
+    public String RegistroTarjeta(@WebParam(name = "numero") String numero,// el numero de la tarjeta tiene una longitud de 10
             @WebParam(name = "titular") String titular,
             @WebParam(name = "fechaVencimiento") String fechaVencimiento,
             @WebParam(name = "codigoSeguridad") String codigoSeguridad,
@@ -284,30 +285,30 @@ public class ServicioTarjetaCredito {
     //VALIDACIONES
     //VALIDAR TARJETA
     public boolean validarTarjetaCredito(String numeroTarjeta) {
-        // Eliminar espacios en blanco y guiones del número de tarjeta
-        String numeroTarjetaSinEspacios = numeroTarjeta.replace(" ", "").replace("-", "");
+    // Eliminar espacios en blanco y guiones del número de tarjeta
+    String numeroTarjetaSinEspacios = numeroTarjeta.replace(" ", "").replace("-", "");
 
-        // Verificar que el número de tarjeta contenga solo dígitos
-        if (!numeroTarjetaSinEspacios.matches("\\d+")) {
-            return false;
-        }
-
-        // Aplicar el algoritmo de Luhn
-        int suma = 0;
-        boolean doble = false;
-        for (int i = numeroTarjetaSinEspacios.length() - 1; i >= 0; i--) {
-            int digito = Character.getNumericValue(numeroTarjetaSinEspacios.charAt(i));
-            if (doble) {
-                digito *= 2;
-                if (digito > 9) {
-                    digito -= 9;
-                }
-            }
-            suma += digito;
-            doble = !doble;
-        }
-
-        // La tarjeta es válida si la suma es divisible por 10
-        return suma % 10 == 0;
+    // Verificar que el número de tarjeta contenga solo dígitos
+    if (!numeroTarjetaSinEspacios.matches("\\d{10}")) {
+        return false;
     }
+
+    // Aplicar el algoritmo de Luhn
+    int suma = 0;
+    boolean doble = false;
+    for (int i = numeroTarjetaSinEspacios.length() - 1; i >= 0; i--) {
+        int digito = Character.getNumericValue(numeroTarjetaSinEspacios.charAt(i));
+        if (doble) {
+            digito *= 2;
+            if (digito > 9) {
+                digito -= 9;
+            }
+        }
+        suma += digito;
+        doble = !doble;
+    }
+
+    // La tarjeta es válida si la suma es divisible por 10
+    return suma % 10 == 0;
+}
 }
