@@ -190,33 +190,7 @@ public class ServicioLineaArea {
     }
 //**************************************************************************************************************
 
-    @WebMethod(operationName = "BuscarVuelos")
-    public List<HorarioVuelo> buscarVuelosDisponibles(
-            @WebParam(name = "fecha") String fecha,
-            @WebParam(name = "hora") String hora) {
-
-        try {
-            if (!esFechaValida(fecha) || !esHoraValida(hora)) {
-                return new ArrayList<>();
-            }
-
-            List<HorarioVuelo> vuelosDisponibles = new ArrayList<>();
-
-            for (HorarioVuelo vuelo : horarios) {
-                if (vuelo.coincidenciaFechaHora(fecha, hora)) {
-                    vuelosDisponibles.add(vuelo);
-                }
-            }
-
-            return vuelosDisponibles;
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error durante la búsqueda de vuelos disponibles. Excepción: " + e.getMessage(), e);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error inesperado durante la búsqueda de vuelos disponibles", e);
-        }
-    }
+    
 
     public String cambiarVuelo(
             @WebParam(name = "numeroVuelo") String idVuelo,

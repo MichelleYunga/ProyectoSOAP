@@ -73,6 +73,7 @@ public class ServicioTarjetaCredito {
         }
     }
 
+   /* *************************************************************************************************************/
     //METODO PARA ACTUALIZAR LA TARJETA DE CREDITO
     //SE INGRESA el numero de la tarjeta para realizar la modificacion
     @WebMethod(operationName = "ActualizarTarjeta")
@@ -123,6 +124,8 @@ public class ServicioTarjetaCredito {
         }
     }
 
+    
+    /***************************************************************************************************************************/
     //TARJETA DE CREDITO
     @WebMethod(operationName = "validarFechaVencimiento")
     public boolean validarFechaVencimiento(String numeroTarjeta, String fechaVencimiento) {
@@ -153,6 +156,8 @@ public class ServicioTarjetaCredito {
         }
     }
 
+    
+    /*************************************************************************************************/
     //METODO PARA CONSULTAR SALDO DISPONIBLE
     @WebMethod(operationName = "consultarSaldoDisponible")
     public Float consultarSaldoDisponible(@WebParam(name = "numero") String numeroTarjeta) {
@@ -170,6 +175,8 @@ public class ServicioTarjetaCredito {
         }
     }
 
+    
+    /***********************************************************************************************/
     //METODO PARA REALIZAR LA TRANSACCION
     @WebMethod(operationName = "realizartTransaccion")
     public boolean realizarTransaccion(
@@ -224,7 +231,7 @@ public class ServicioTarjetaCredito {
         return null; // Tarjeta no encontrada
     }///
 
-    
+ /******************************************************************************************************************/   
     
     //METODO PARA VER EL HISTORIAL DE LA TARJETA DE CREDITO
     @WebMethod(operationName = "obtenerHistorialTarjeta")
@@ -240,6 +247,7 @@ public class ServicioTarjetaCredito {
         return new ArrayList<>();
     }
 
+    /*****************************************************************************************************************/
     //METODO PARA RETIRAR DINERO
     @WebMethod(operationName = "retirarDinero")
     public boolean retirarDinero(@WebParam(name = "numeroTarjeta") String numeroTarjeta,
@@ -282,7 +290,7 @@ public class ServicioTarjetaCredito {
         }
     }
     
-    
+/**************************************************************************************************************/    
     //LISTADO DE TARJETAS
     
     @WebMethod(operationName = "ListarTarjetas")
