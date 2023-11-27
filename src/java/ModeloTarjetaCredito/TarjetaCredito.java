@@ -96,7 +96,7 @@ public class TarjetaCredito {
 
     
     
-       public void agregarTransaccion(String descripcion, double monto, Date fecha) {
+       public void agregarTransaccion(String descripcion, double monto, String fecha) {
         this.historialTransacciones.add(new Transaccion(descripcion, monto, fecha));
     }
        

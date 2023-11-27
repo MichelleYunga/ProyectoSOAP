@@ -10,6 +10,7 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import ModeloTarjetaCredito.TarjetaCredito;
 import ModeloTarjetaCredito.Transaccion;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -71,8 +72,6 @@ public class ServicioTarjetaCredito {
         }
     }
 
-    
-    
     //METODO PARA ACTUALIZAR LA TARJETA DE CREDITO
     //SE INGRESA el numero de la tarjeta para realizar la modificacion
     @WebMethod(operationName = "ActualizarTarjeta")
@@ -123,73 +122,111 @@ public class ServicioTarjetaCredito {
         }
     }
 
-    
-    
-    
-    
     //TARJETA DE CREDITO
     @WebMethod(operationName = "validarFechaVencimiento")
     public boolean validarFechaVencimiento(String numeroTarjeta, String fechaVencimiento) {
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    try {
-        LocalDate fechaVencimientoTarjeta = LocalDate.parse(fechaVencimiento, formatter);
-        LocalDate fechaActual = LocalDate.now();
+        try {
+            LocalDate fechaVencimientoTarjeta = LocalDate.parse(fechaVencimiento, formatter);
+            LocalDate fechaActual = LocalDate.now();
 
-        if (fechaVencimientoTarjeta.isBefore(fechaActual)) {
-            // Tarjeta vencida
+            if (fechaVencimientoTarjeta.isBefore(fechaActual)) {
+                // Tarjeta vencida
+                return false;
+            }
+
+            for (TarjetaCredito tarjeta : tarjetasCredito) {
+                if (tarjeta.getNumero().equals(numeroTarjeta) && tarjeta.getFechaVencimiento().equals(fechaVencimiento)) {
+                    // Fecha de vencimiento válida
+                    System.out.println("Fecha de vencimiento valida");
+                    return true;
+                }
+            }
+
+            return false;
+        } catch (Exception e) {
+            // Se produjo un error al parsear la fecha de vencimiento
+            System.out.println("Error al parsear la fecha de vencimiento: " + e.getMessage());
             return false;
         }
-
-        for (TarjetaCredito tarjeta : tarjetasCredito) {
-            if (tarjeta.getNumero().equals(numeroTarjeta) && tarjeta.getFechaVencimiento().equals(fechaVencimiento)) {
-                // Fecha de vencimiento válida
-                System.out.println("Fecha de vencimiento valida");
-                return true;
-            }
-        }
-
-        return false;
-    } catch (Exception e) {
-        // Se produjo un error al parsear la fecha de vencimiento
-        System.out.println("Error al parsear la fecha de vencimiento: " + e.getMessage());
-        return false;
     }
-}
 
     //METODO PARA CONSULTAR SALDO DISPONIBLE
     @WebMethod(operationName = "consultarSaldoDisponible")
     public Float consultarSaldoDisponible(@WebParam(name = "numero") String numeroTarjeta) {
+        try {
+            for (TarjetaCredito tarjeta : tarjetasCredito) {
+                if (tarjeta.getNumero().equals(numeroTarjeta)) {
+                    return tarjeta.getSaldoDisponible();
+                }
+            }
+
+            return null;
+        } catch (Exception e) {
+            System.out.println("Error al consultar saldo disponible: " + e.getMessage());
+            return null;
+        }
+    }
+
+    //METODO PARA REALIZAR LA TRANSACCION
+    @WebMethod(operationName = "realizartTransaccion")
+    public boolean realizarTransaccion(
+            @WebParam(name = "numeroTarjeta") String numeroTarjeta,
+            @WebParam(name = "monto") float monto,
+            @WebParam(name = "descripcion") String descripcion,
+            @WebParam(name = "fecha") String fecha) {
+
+        try {
+            validarEntrada(numeroTarjeta, monto, descripcion, fecha);
+
+            TarjetaCredito tarjeta = buscarTarjetaCredito(numeroTarjeta);
+
+            if (tarjeta != null && BigDecimal.valueOf(tarjeta.getSaldoDisponible()).compareTo(BigDecimal.valueOf(monto)) >= 0) {
+                realizarTransaccionExitosa(tarjeta, descripcion, monto, fecha);
+                System.out.println("Su transferencia fue exitosa");
+                return true;
+            } else {
+                System.out.println("Saldo insuficiente para realizar la transferencia");
+            }
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error en la entrada: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Error durante la transacción: " + e.getMessage());
+        }
+
+        System.out.println("La transferencia ha fallado");
+        return false;
+    }
+
+    //METODOS PARA RELIZAR LA TRANSACCION//
+    private void validarEntrada(String numeroTarjeta, float monto, String descripcion, String fecha) {
+        if (numeroTarjeta == null || descripcion == null || fecha == null || monto <= 0) {
+            throw new IllegalArgumentException("Parámetros de entrada no válidos");
+        }
+    }
+
+    private void realizarTransaccionExitosa(TarjetaCredito tarjeta, String descripcion, float monto, String fecha) {
+        Transaccion transaccion = new Transaccion(descripcion, monto, fecha);
+        tarjeta.getHistorialTransacciones().add(transaccion);
+
+        BigDecimal saldoActual = new BigDecimal(Float.toString(tarjeta.getSaldoDisponible()));
+        tarjeta.setSaldoDisponible(saldoActual.subtract(BigDecimal.valueOf(monto)).floatValue());
+    }
+
+    private TarjetaCredito buscarTarjetaCredito(String numeroTarjeta) {
         for (TarjetaCredito tarjeta : tarjetasCredito) {
             if (tarjeta.getNumero().equals(numeroTarjeta)) {
-                return tarjeta.getSaldoDisponible();
+                return tarjeta;
             }
         }
-        return null;
-    }
+        return null; // Tarjeta no encontrada
+    }///
 
-    //METODO PARA REALIZAR TRANSACCIONES
-    @WebMethod
-    public boolean realizarTransaccion(@WebParam(name = "numeroTarjeta") String numeroTarjeta,
-            @WebParam(name = "monto") double monto,
-            @WebParam(name = "descripcion") String descripcion,
-            @WebParam(name = "fecha") Date fecha) {
-
-        if (validarTarjetaCredito(numeroTarjeta) && monto > 0) {
-            Transaccion transaccion = new Transaccion(descripcion, monto, fecha);
-            historialTransacciones.add(transaccion);
-            System.out.println("Su transferencia fue exitos");
-            // Retorna verdadero si la transacción fue exitosa
-            return true;
-        } else {
-            System.out.println("la transferencia fallo");
-            // Retorna falso si la transacción falló
-            return false;
-        }
-    }
-
+    
+    
     //METODO PARA VER EL HISTORIAL DE LA TARJETA DE CREDITO
-    @WebMethod
+    @WebMethod(operationName = "obtenerHistorialTarjeta")
     public List<Transaccion> obtenerHistorialTarjeta(@WebParam(name = "numeroTarjeta") String numeroTarjeta) {
         // Buscar la tarjeta de crédito en la lista de tarjetas
         for (TarjetaCredito tarjeta : tarjetasCredito) {
@@ -204,58 +241,47 @@ public class ServicioTarjetaCredito {
 
     //METODO PARA RETIRAR DINERO
     @WebMethod(operationName = "retirarDinero")
-    public boolean retirarDinero(@WebParam(name = "numero") String numeroTarjeta,
-            @WebParam(name = "monto") float monto,
-            @WebParam(name = "idCliente") int idCliente) {
-        for (TarjetaCredito tarjeta : tarjetasCredito) {
-            if (tarjeta.getNumero().equals(numeroTarjeta)) {
+    public boolean retirarDinero(@WebParam(name = "numeroTarjeta") String numeroTarjeta,
+            @WebParam(name = "cedulaCliente") String cedulaCliente,
+            @WebParam(name = "monto") float monto) {
+        try {
+            // Validar que los parámetros no sean nulos o vacíos
+            validarRetiroDinero(numeroTarjeta, cedulaCliente, monto);
+
+            // Buscar la tarjeta de crédito por número
+            TarjetaCredito tarjeta = buscarTarjetaCredito(numeroTarjeta);
+
+            // Verificar que la tarjeta existe y la cédula del cliente coincide
+            if (tarjeta != null && tarjeta.getCliente().getCedula().equals(cedulaCliente)) {
+                // Verificar que hay saldo suficiente para el retiro
                 if (tarjeta.getSaldoDisponible() >= monto) {
-                    if (esClienteLegitimo(idCliente)) {
-                        tarjeta.setSaldoDisponible(tarjeta.getSaldoDisponible() - monto);
-                        System.out.println("El retiro de dinero fue exitoso");
-                        return true; // Retiro exitoso
-                    } else {
-                        System.out.println("No se puede realizar el retiro, el cliente no es legítimo");
-                        return false; // Cliente no legítimo
-                    }
+                    // Realizar el retiro
+                    tarjeta.setSaldoDisponible(tarjeta.getSaldoDisponible() - monto);
+                    System.out.println("Retiro exitoso");
+                    return true;
                 } else {
-                    System.out.println("No se puede realizar el retiro, su saldo es insuficiente");
-                    return false; // Saldo insuficiente
+                    System.out.println("Saldo insuficiente para el retiro");
                 }
+            } else {
+                System.out.println("La tarjeta no existe o la cédula del cliente no coincide");
             }
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error en los parámetros: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Error durante el retiro: " + e.getMessage());
         }
-        System.out.println("TARJETA NO ENCONTRADA");
-        return false; // Tarjeta no encontrada
+
+        System.out.println("El retiro ha fallado");
+        return false;
     }
 
-    //METODO PARA VER SI EL CLIENTE LEGITIMOO
-    //SE VERIFICA MEDIANTE EL ID    
-    private boolean esClienteLegitimo(int idCliente) {
-        GenerarUsuarioId generador = new GenerarUsuarioId();
-        //Obetenemos la lista de clientes
-        List<Cliente> Listaclientes = generador.getClientes();
-        //convertimos a un array
-        ArrayList<Cliente> clientes = new ArrayList<>(Listaclientes);
-        for (Cliente cliente : clientes) {
-            if (cliente.getIdCliente() == idCliente) {
-                return true; // Cliente legítimo
-            }
+    private void validarRetiroDinero(String numeroTarjeta, String cedulaCliente, float monto) {
+        if (numeroTarjeta == null || numeroTarjeta.isEmpty() || cedulaCliente == null || cedulaCliente.isEmpty() || monto <= 0) {
+            throw new IllegalArgumentException("Parámetros de retiro no válidos");
         }
-        return false; // Cliente no encontrado
     }
 
     //VALIDACIONES
-    private boolean esFechaValida(String fecha) {
-        try {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            dateFormat.setLenient(false);
-            dateFormat.parse(fecha);
-            return true;
-        } catch (ParseException e) {
-            return false;
-        }
-    }
-
     //VALIDAR TARJETA
     public boolean validarTarjetaCredito(String numeroTarjeta) {
         // Eliminar espacios en blanco y guiones del número de tarjeta

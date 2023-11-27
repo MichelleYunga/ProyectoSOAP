@@ -14,13 +14,15 @@ import java.util.Date;
 public class Transaccion {
     private String descripcion;
     private double monto;
-    private Date fecha;
+    private String fecha;
 
-    public Transaccion(String descripcion, double monto, Date fecha) {
+    public Transaccion(String descripcion, double monto, String fecha) {
         this.descripcion = descripcion;
         this.monto = monto;
         this.fecha = fecha;
     }
+
+    
 
 
     public String getDescripcion() {
@@ -31,13 +33,15 @@ public class Transaccion {
         return monto;
     }
 
-    public Date getFecha() {
+    public String getFecha() {
         return fecha;
     }
 
-    public void setFecha(Date fecha) {
+    public void setFecha(String fecha) {
         this.fecha = fecha;
     }
+
+    
     
     
 }
