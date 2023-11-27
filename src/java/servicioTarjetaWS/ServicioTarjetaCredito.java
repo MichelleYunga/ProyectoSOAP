@@ -71,7 +71,10 @@ public class ServicioTarjetaCredito {
         }
     }
 
+    
+    
     //METODO PARA ACTUALIZAR LA TARJETA DE CREDITO
+    //SE INGRESA el numero de la tarjeta para realizar la modificacion
     @WebMethod(operationName = "ActualizarTarjeta")
     public String ActualizarTarjeta(@WebParam(name = "numero") String numero,
             @WebParam(name = "titular") String titular,
@@ -120,9 +123,16 @@ public class ServicioTarjetaCredito {
         }
     }
 
+    
+    
+    
+    
     //TARJETA DE CREDITO
+    @WebMethod(operationName = "validarFechaVencimiento")
     public boolean validarFechaVencimiento(String numeroTarjeta, String fechaVencimiento) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+    try {
         LocalDate fechaVencimientoTarjeta = LocalDate.parse(fechaVencimiento, formatter);
         LocalDate fechaActual = LocalDate.now();
 
@@ -138,10 +148,14 @@ public class ServicioTarjetaCredito {
                 return true;
             }
         }
-        System.out.println("Fecha de vencimiento invalida o tarjeta no encontrada");
-        // Fecha de vencimiento inválida o tarjeta no encontrada
+
+        return false;
+    } catch (Exception e) {
+        // Se produjo un error al parsear la fecha de vencimiento
+        System.out.println("Error al parsear la fecha de vencimiento: " + e.getMessage());
         return false;
     }
+}
 
     //METODO PARA CONSULTAR SALDO DISPONIBLE
     @WebMethod(operationName = "consultarSaldoDisponible")
