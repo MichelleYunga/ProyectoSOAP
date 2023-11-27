@@ -66,6 +66,8 @@ public class ServicioLineaArea {
         }
         return false;
     }
+    
+    
 
     @WebMethod(operationName = "ListarHorarios")
     public String ListarHorarios() {

@@ -30,32 +30,46 @@ public class ServicioTarjetaCredito {
     /**
      * This is a sample web service operation
      */
-    private List<TarjetaCredito> tarjetasCredito;
+    private ArrayList<TarjetaCredito> tarjetasCredito = new ArrayList<>();
     TarjetaCredito tar;
     private List<Transaccion> historialTransacciones;
 
     //METODO PARA EL REGISTRO DE LA TARJETA
     @WebMethod(operationName = "RegistroTarjeta")
-    public boolean Registro(@WebParam(name = "numero") String numero,
+    public String RegistroTarjeta(@WebParam(name = "numero") String numero,
             @WebParam(name = "titular") String titular,
             @WebParam(name = "fechaVencimiento") String fechaVencimiento,
             @WebParam(name = "codigoSeguridad") String codigoSeguridad,
-            @WebParam(name = "saldoDisponible") float saldoDisponible) {
-        
-        
-         
-        for (TarjetaCredito tarjeta : tarjetasCredito) {
-            if (numero.equals(tarjeta.getNumero())) {
-                System.out.println("Ya existe esta tarjeta de credito");
-                return false; // Tarjeta ya registrada
-            }
-        }
+            @WebParam(name = "saldoDisponible") float saldoDisponible,
+            @WebParam(name = "cliente") String cliente) {
 
-        int idCliente = tar.asignarIdCliente();
-        tarjetasCredito.add(new TarjetaCredito(idCliente, numero, titular, fechaVencimiento, codigoSeguridad, saldoDisponible));
-        System.out.println("Tarjeta de credito creada exitosamente");
-        return true; // Registro de tarjeta exitoso
+        try {
+            for (TarjetaCredito tarjeta : tarjetasCredito) {
+                if (numero.equals(tarjeta.getNumero())) {
+                    System.out.println("Ya existe esta tarjeta de crédito");
+                    return "TARJETA DE CRÉDITO YA REGISTRADA"; // Tarjeta ya registrada
+                }
+            }
+
+            System.out.println("Creando objeto Cliente con nombre: " + cliente);
+            Cliente propietario = new Cliente(cliente);
+
+            System.out.println("Creando objeto TarjetaCredito con número: " + numero);
+            TarjetaCredito tarjeta = new TarjetaCredito(numero, titular, fechaVencimiento, codigoSeguridad, saldoDisponible, propietario);
+
+            tarjetasCredito.add(tarjeta);
+
+            System.out.println("Tarjeta de crédito creada exitosamente");
+            return "REGISTRO DE TARJETA EXITOSO";
+        } catch (Exception e) {
+            throw new RuntimeException("Error durante el registro de tarjeta: " + e.getMessage(), e);
+        }
     }
+    
+    
+    
+    
+    
 
     //METODO PARA ACTUALIZAR LA TARJETA DE CREDITO
     @WebMethod(operationName = "ActualizarTarjeta")
@@ -78,6 +92,8 @@ public class ServicioTarjetaCredito {
         return false; // Tarjeta no encontrada
     }
 
+    
+    
     //TARJETA DE CREDITO
     public boolean validarFechaVencimiento(String numeroTarjeta, String fechaVencimiento) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -120,7 +136,7 @@ public class ServicioTarjetaCredito {
             @WebParam(name = "fecha") Date fecha) {
 
         if (validarTarjetaCredito(numeroTarjeta) && monto > 0) {
-            Transaccion transaccion = new Transaccion(descripcion, monto,fecha);
+            Transaccion transaccion = new Transaccion(descripcion, monto, fecha);
             historialTransacciones.add(transaccion);
             System.out.println("Su transferencia fue exitos");
             // Retorna verdadero si la transacción fue exitosa
@@ -145,7 +161,6 @@ public class ServicioTarjetaCredito {
         // Si no se encuentra la tarjeta, devolver una lista vacía
         return new ArrayList<>();
     }
-    
 
     //METODO PARA RETIRAR DINERO
     @WebMethod(operationName = "retirarDinero")

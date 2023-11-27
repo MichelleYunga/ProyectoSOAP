@@ -17,7 +17,6 @@ import modeloInicioSesion.Cliente;
  */
 public class TarjetaCredito {
 
-    private int idCliente;
     private String numero;
     private String titular;
     private String fechaVencimiento;
@@ -25,47 +24,24 @@ public class TarjetaCredito {
     //Este atributo sirve para el ingreso de dinero al momento de registrar la tarjeta
     private float saldoDisponible;
     private List<Transaccion> historialTransacciones;
+    //ATRIBUTO PARA ASIGNAR CLIENTE A UNA TARJETA DE CREDITO Y VICEVERSA
+    private Cliente cliente;
 
-    public TarjetaCredito(String numero, String titular, String fechaVencimiento, String codigoSeguridad, float saldoDisponible) {
+    public TarjetaCredito(String numero, String titular, String fechaVencimiento, String codigoSeguridad, float saldoDisponible, Cliente cliente) {
         this.numero = numero;
         this.titular = titular;
         this.fechaVencimiento = fechaVencimiento;
         this.codigoSeguridad = codigoSeguridad;
         this.saldoDisponible = saldoDisponible;
-        this.idCliente = asignarIdCliente();
+        this.cliente = cliente;
     }
-
-    public TarjetaCredito(int idCliente, String numero, String titular, String fechaVencimiento, String codigoSeguridad, float saldoDisponible) {
-        this.idCliente = asignarIdCliente();
-        this.numero = numero;
-        this.titular = titular;
-        this.fechaVencimiento = fechaVencimiento;
-        this.codigoSeguridad = codigoSeguridad;
-        this.saldoDisponible = saldoDisponible;
-        this.historialTransacciones = new ArrayList<>();
-    }
-
-   
+    
+    
     
 
     public TarjetaCredito() {
     }
     
-//METODO PARA TRAER EL ID DEL ULTIMO REGISTRO DEL CLIENTE
-    public int asignarIdCliente() {
-        GenerarUsuarioId generador = new GenerarUsuarioId();
-        //Obetenemos la lista de clientes
-        List<Cliente> Listaclientes = generador.getClientes();
-        //convertimos a un array
-        ArrayList<Cliente> clientes = new ArrayList<>(Listaclientes);
-
-        if (!clientes.isEmpty()) {
-            Cliente ultimoCliente = clientes.get(clientes.size() - 1);
-            return ultimoCliente.getIdCliente();
-        }
-
-        return 0; //No hay cliente registradoo
-    }
     
     
 
@@ -113,13 +89,15 @@ public class TarjetaCredito {
         this.saldoDisponible = saldoDisponible;
     }
 
-    public int getIdCliente() {
-        return idCliente;
+    public Cliente getCliente() {
+        return cliente;
     }
 
-    public void setIdCliente(int idCliente) {
-        this.idCliente = idCliente;
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
     }
+
+    
     
        public void agregarTransaccion(String descripcion, double monto, Date fecha) {
         this.historialTransacciones.add(new Transaccion(descripcion, monto, fecha));

@@ -5,6 +5,8 @@
  */
 package modeloInicioSesion;
 
+import ModeloTarjetaCredito.TarjetaCredito;
+
 /**
  *
  * @author enriq
@@ -18,6 +20,9 @@ public class Cliente {
     private String usuario;
     private String contrasena;
     private String  valContrasena;
+    
+    //ATRIBUTO PARA ASIGNAR UNA TARJETA A UN CLIENTE
+    private TarjetaCredito tarjeta;
 
     public Cliente(int idCliente, String nombre, String apellido, String cedula, String usuario, String contrasena, String valContrasena) {
         this.idCliente = idCliente;
@@ -29,8 +34,24 @@ public class Cliente {
         this.valContrasena = valContrasena;
     }
 
-    
+    public Cliente(int idCliente, String nombre, String apellido, String cedula, String usuario, String contrasena, String valContrasena, TarjetaCredito tarjeta) {
+        this.idCliente = idCliente;
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.cedula = cedula;
+        this.usuario = usuario;
+        this.contrasena = contrasena;
+        this.valContrasena = valContrasena;
+        this.tarjeta = tarjeta;
+    }
 
+    public Cliente(String cedula) {
+        this.cedula = cedula;
+    }
+
+   
+    
+    
     public Cliente() {
     }
 
