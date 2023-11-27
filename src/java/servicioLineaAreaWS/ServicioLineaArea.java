@@ -86,6 +86,7 @@ public class ServicioLineaArea {
         return listaHorarios.toString();
     }
 //**********************************************************************************************************************************
+
     @WebMethod(operationName = "RegistroLineaAerea")
     public String registroLineaAerea(
             @WebParam(name = "id") int idLinea,
@@ -206,43 +207,53 @@ public class ServicioLineaArea {
             }
 
             return vuelosDisponibles;
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error durante la búsqueda de vuelos disponibles. Excepción: " + e.getMessage(), e);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("Error durante la búsqueda de vuelos disponibles", e);
+            throw new RuntimeException("Error inesperado durante la búsqueda de vuelos disponibles", e);
         }
     }
 
-    @WebMethod(operationName = "CambiarVuelo")
-    public boolean cambiarVuelo(
-            @WebParam(name = "numeroVuelo") String idVuelo, // Cambiado a String
+    public String cambiarVuelo(
+            @WebParam(name = "numeroVuelo") String idVuelo,
             @WebParam(name = "nuevaFecha") String nuevaFecha,
-            @WebParam(name = "nuevaHora") String nuevaHora) {
+            @WebParam(name = "nuevaHoraSalida") String nuevaHoraSalida,
+            @WebParam(name = "nuevaHoraLlegada") String nuevaHoraLlegada) {
 
-        if (!esFechaValida(nuevaFecha) || !esHoraValida(nuevaHora)) {
-            return false;
+        if (idVuelo == null || idVuelo.isEmpty()
+                || nuevaFecha == null || nuevaFecha.isEmpty()
+                || nuevaHoraSalida == null || nuevaHoraSalida.isEmpty()
+                || nuevaHoraLlegada == null || nuevaHoraLlegada.isEmpty()) {
+            return "Por favor, complete todos los campos.";
+        }
+        if (!esFechaValida(nuevaFecha) || !esHoraValida(nuevaHoraSalida) || !esHoraValida(nuevaHoraLlegada)) {
+            return "Datos de fecha u hora no válidos.";
         }
 
         for (HorarioVuelo vuelo : horarios) {
             if (vuelo.getIdHorario().equals(idVuelo)) {
                 vuelo.setFecha(nuevaFecha);
-                vuelo.setHoraSalida(nuevaFecha);
-                return true;
+                vuelo.setHoraSalida(nuevaHoraSalida);
+                vuelo.setHoraLlegada(nuevaHoraLlegada);
+                return "Se cambió la fecha y la hora del vuelo con éxito.";
             }
         }
 
-        return false;
+        return "No se encontró el ID del vuelo.";
     }
 
     @WebMethod(operationName = "AnularVuelo")
-    public Boolean anularVuelo(@WebParam(name = "numeroVuelo") String numeroVuelo) {
+    public String anularVuelo(@WebParam(name = "numeroVuelo") String numeroVuelo) {
 
         for (HorarioVuelo vuelo : horarios) {
             if (vuelo.getIdHorario().equals(numeroVuelo)) {
                 horarios.remove(vuelo);
-                return true;
+                return "Vuelo anulado";
             }
         }
-        return false;
+        return "no se a encontrado el vuelo";
     }
 
     //VALIDACIONES
@@ -267,6 +278,7 @@ public class ServicioLineaArea {
         // Verificar si la hora coincide con el formato esperado
         return matcher.matches();
     }
+
     private Date convertirfecha(String fecha) {
         try {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
